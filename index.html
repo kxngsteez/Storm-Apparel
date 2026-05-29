@@ -1048,7 +1048,7 @@
   }
   .checkout-btn:hover { background: var(--white); }
 
-  .stripe-note {
+  .STipe-note {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1132,7 +1132,7 @@
 
 <!-- Page Loader -->
 <div class="page-load" id="pageLoad">
-  <div class="loader-logo">STR<span>O</span>RM</div>
+  <div class="loader-logo">ST<span>O</span>RM</div>
 </div>
 
 <!-- Custom Cursor -->
@@ -1163,13 +1163,13 @@
       <div class="cart-total-amount" id="cartTotal">$0</div>
     </div>
     <button class="checkout-btn" onclick="handleCheckout()">PROCEED TO CHECKOUT →</button>
-    <div class="stripe-note">🔒 SECURED BY STRIPE · SSL ENCRYPTED</div>
+    <div class="STipe-note">🔒 SECURED BY STIPE · SSL ENCRYPTED</div>
   </div>
 </div>
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">STR<span>O</span>RM</a>
+  <a href="#" class="nav-logo">ST<span>O</span>RM</a>
   <ul class="nav-links">
     <li><a href="#products">Shop</a></li>
     <li><a href="#categories">Collections</a></li>
@@ -1295,7 +1295,7 @@
     <div class="feature-item">
       <span class="feature-icon">🔒</span>
       <div class="feature-title">SECURE PAYMENTS</div>
-      <p class="feature-desc">Stripe-powered checkout with SSL encryption. Your card data never touches our servers.</p>
+      <p class="feature-desc">STipe-powered checkout with SSL encryption. Your card data never touches our servers.</p>
     </div>
     <div class="feature-item">
       <span class="feature-icon">↩️</span>
@@ -1325,7 +1325,7 @@
 <footer>
   <div class="footer-top">
     <div>
-      <div class="footer-logo">STR<span>O</span>RM</div>
+      <div class="footer-logo">ST<span>O</span>RM</div>
       <p class="footer-tagline">Bold clothing for those who wear the weather. Designed for the ones who move through life on their own terms.</p>
       <div class="social-links">
         <a href="#" class="social-link">𝕏</a>
@@ -1372,7 +1372,7 @@
     <div class="footer-copy">© 2025 STORM CLOTHING. ALL RIGHTS RESERVED.</div>
     <div class="footer-security">
       <div class="security-badge">SSL SECURED</div>
-      <div class="security-badge">STRIPE PAYMENTS</div>
+      <div class="security-badge">STIPE PAYMENTS</div>
       <div class="security-badge">GDPR COMPLIANT</div>
     </div>
   </div>
@@ -1530,9 +1530,9 @@
   }
 
   function handleCheckout() {
-    showToast('Redirecting to Stripe checkout...');
+    showToast('Redirecting to STipe checkout...');
     setTimeout(() => {
-      showToast('Stripe integration: connect your API key');
+      showToast('STipe integration: connect your API key');
     }, 2000);
   }
 
