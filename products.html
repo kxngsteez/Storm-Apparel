@@ -68,11 +68,13 @@
             </div>
         </section>
         <div class="filter-row" id="filterRow">
-            <button class="filter-chip active" data-filter="All" onclick="filterProducts('All')">All</button>
-            <button class="filter-chip" data-filter="Tops" onclick="filterProducts('Tops')">Tops</button>
-            <button class="filter-chip" data-filter="Jackets" onclick="filterProducts('Jackets')">Jackets</button>
-            <button class="filter-chip" data-filter="Bottoms" onclick="filterProducts('Bottoms')">Bottoms</button>
-            <button class="filter-chip" data-filter="Accessories" onclick="filterProducts('Accessories')">Accessories</button>
+            <button class="filter-chip active" data-type="cat" data-filter="All" onclick="filterProducts('cat','All')">All</button>
+            <button class="filter-chip" data-type="tag" data-filter="New" onclick="filterProducts('tag','New')">New Arrivals</button>
+            <button class="filter-chip" data-type="cat" data-filter="Tops" onclick="filterProducts('cat','Tops')">Tops & Tees</button>
+            <button class="filter-chip" data-type="cat" data-filter="Jackets" onclick="filterProducts('cat','Jackets')">Jackets</button>
+            <button class="filter-chip" data-type="cat" data-filter="Bottoms" onclick="filterProducts('cat','Bottoms')">Bottoms</button>
+            <button class="filter-chip" data-type="cat" data-filter="Accessories" onclick="filterProducts('cat','Accessories')">Accessories</button>
+            <button class="filter-chip" data-type="tag" data-filter="Sale" onclick="filterProducts('tag','Sale')">Sale</button>
         </div>
         <section class="all-products-section" id="shop">
             <div class="products-grid" id="productsGrid"></div>
@@ -96,22 +98,22 @@
                     <div class="footer-col-title">Shop</div>
                     <ul class="footer-links">
                         <li>
-                            <a href="#">New Arrivals</a>
+                            <a href="products.html?tag=New">New Arrivals</a>
                         </li>
                         <li>
-                            <a href="#">Tops & Tees</a>
+                            <a href="products.html?cat=Tops">Tops & Tees</a>
                         </li>
                         <li>
-                            <a href="#">Jackets</a>
+                            <a href="products.html?cat=Jackets">Jackets</a>
                         </li>
                         <li>
-                            <a href="#">Bottoms</a>
+                            <a href="products.html?cat=Bottoms">Bottoms</a>
                         </li>
                         <li>
-                            <a href="#">Accessories</a>
+                            <a href="products.html?cat=Accessories">Accessories</a>
                         </li>
                         <li>
-                            <a href="#">Sale</a>
+                            <a href="products.html?tag=Sale">Sale</a>
                         </li>
                     </ul>
                 </div>
@@ -142,7 +144,7 @@
                     <div class="footer-col-title">Storm</div>
                     <ul class="footer-links">
                         <li>
-                            <a href="#">About Us</a>
+                            <a href="about.html">About Us</a>
                         </li>
                         <li>
                             <a href="#">Sustainability</a>
@@ -262,13 +264,15 @@ const products=[
 const grid=document.getElementById('productsGrid');
 const pageCount=document.getElementById('pageCount');
 let selectedSizes={};
+let activeFilterType='cat';
 let activeFilter='All';
 
 function renderGrid(){
-  const list=activeFilter==='All'?products:products.filter(p=>p.category===activeFilter);
+  const list = activeFilterType==='tag' ? products.filter(p=>p.tag===activeFilter) : (activeFilter==='All'?products:products.filter(p=>p.category===activeFilter));
   pageCount.textContent=list.length+(list.length===1?' item':' items');
   if(!list.length){
-    grid.innerHTML='<div class="empty-state">No products in this category yet.</div>';
+    const label = activeFilterType==='tag' ? `tagged "${activeFilter}"` : (activeFilter==='All'?'':`in ${activeFilter}`);
+    grid.innerHTML=`<div class="empty-state">No products ${label} yet.</div>`;
     return;
   }
   grid.innerHTML=list.map(p=>{
@@ -277,12 +281,19 @@ function renderGrid(){
   }).join('');
 }
 
-function filterProducts(cat){
-  activeFilter=cat;
-  document.querySelectorAll('.filter-chip').forEach(el=>el.classList.toggle('active',el.dataset.filter===cat));
+function filterProducts(type,val){
+  activeFilterType=type;
+  activeFilter=val;
+  document.querySelectorAll('.filter-chip').forEach(el=>el.classList.toggle('active',el.dataset.type===type&&el.dataset.filter===val));
   renderGrid();
 }
-renderGrid();
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const tag=params.get('tag'), cat=params.get('cat');
+  if(tag)filterProducts('tag',tag);
+  else if(cat)filterProducts('cat',cat);
+  else renderGrid();
+})();
 
 function selectSize(e,id,size){
   e.stopPropagation();
