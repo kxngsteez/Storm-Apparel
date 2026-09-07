@@ -482,21 +482,27 @@ function renderPDP(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePDP();});
 
+let checkoutJustOpened=0;
 function openCheckout(){
-  if(!cart.length){showToast('Your bag is empty');return;}
-  toggleCart();
-  document.getElementById('checkoutSummary').innerHTML = cart.map(i=>
-    `<div class="checkout-summary-item"><span>${i.name} (${i.size}${i.print?', '+i.print:''}) x${i.qty}</span><span>R${i.price*i.qty}</span></div>`
-  ).join('') + `<div class="checkout-summary-total"><span>Total</span><span>R${cart.reduce((s,i)=>s+i.price*i.qty,0)}</span></div>`;
-  document.getElementById('checkoutError').classList.remove('show');
-  document.getElementById('checkoutOverlay').classList.add('show');
-  document.body.style.overflow='hidden';
+  try{
+    if(!cart.length){showToast('Your bag is empty');return;}
+    toggleCart();
+    checkoutJustOpened=Date.now();
+    document.getElementById('checkoutSummary').innerHTML = cart.map(i=>
+      `<div class="checkout-summary-item"><span>${i.name} (${i.size}${i.print?', '+i.print:''}) x${i.qty}</span><span>R${i.price*i.qty}</span></div>`
+    ).join('') + `<div class="checkout-summary-total"><span>Total</span><span>R${cart.reduce((s,i)=>s+i.price*i.qty,0)}</span></div>`;
+    document.getElementById('checkoutError').classList.remove('show');
+    document.getElementById('checkoutOverlay').classList.add('show');
+    document.body.style.overflow='hidden';
+  }catch(err){
+    showToast('Could not open checkout: '+err.message);
+  }
 }
 function closeCheckout(){
   document.getElementById('checkoutOverlay').classList.remove('show');
   document.body.style.overflow='';
 }
-function closeCheckoutOutside(e){if(e.target.id==='checkoutOverlay')closeCheckout();}
+function closeCheckoutOutside(e){if(Date.now()-checkoutJustOpened<400)return;if(e.target.id==='checkoutOverlay')closeCheckout();}
 
 async function submitCheckout(e){
   e.preventDefault();
