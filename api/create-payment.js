@@ -58,10 +58,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { items, email, nameFirst, nameLast } = req.body || {};
+  const { items, shipping } = req.body || {};
 
   if (!Array.isArray(items) || items.length === 0) {
     res.status(400).json({ error: 'Cart is empty' });
+    return;
+  }
+
+  if (!shipping || !shipping.nameFirst || !shipping.nameLast || !shipping.email || !shipping.address1 || !shipping.city || !shipping.postalCode) {
+    res.status(400).json({ error: 'Missing delivery details' });
     return;
   }
 
@@ -92,19 +97,28 @@ export default async function handler(req, res) {
   const mPaymentId = `STORM-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const { itemName, itemDescription } = summarizeCart(items);
 
+  // PayFast has no native shipping-address field, so we pack it into the
+  // custom_str fields it does support - these get echoed back to us in the
+  // Notify URL (ITN) callback, so the address travels with the order.
+  const addressLine = [shipping.address1, shipping.address2].filter(Boolean).join(', ');
+  const cityLine = [shipping.city, shipping.province, shipping.postalCode, shipping.country].filter(Boolean).join(', ');
+
   const fields = {
     merchant_id: merchantId,
     merchant_key: merchantKey,
     return_url: `${siteUrl}/order-success.html`,
     cancel_url: `${siteUrl}/order-cancelled.html`,
     notify_url: `${siteUrl}/api/payfast-notify`,
-    name_first: nameFirst || '',
-    name_last: nameLast || '',
-    email_address: email || '',
+    name_first: shipping.nameFirst,
+    name_last: shipping.nameLast,
+    email_address: shipping.email,
     m_payment_id: mPaymentId,
     amount: formatAmount(total),
     item_name: itemName,
     item_description: itemDescription,
+    custom_str1: shipping.phone || '',
+    custom_str2: addressLine.slice(0, 255),
+    custom_str3: cityLine.slice(0, 255),
   };
 
   const signature = generateSignature(fields, passphrase);

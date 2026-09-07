@@ -177,7 +177,12 @@ export default async function handler(req, res) {
     pf_payment_id: fields.pf_payment_id,
     amount_gross: fields.amount_gross,
     item_name: fields.item_name,
+    name_first: fields.name_first,
+    name_last: fields.name_last,
     email_address: fields.email_address,
+    phone: fields.custom_str1,
+    address: fields.custom_str2,
+    city_province_postal: fields.custom_str3,
   });
 
   // TODO (next step, once you're ready):
