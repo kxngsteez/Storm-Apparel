@@ -25,6 +25,33 @@
             .filter-chip.active{background:var(--black);border-color:var(--black);color:var(--white);}
             .all-products-section{padding-top:28px;}
             .empty-state{text-align:center;padding:80px 20px;color:var(--gray-500);}
+        
+        <style>
+            .checkout-overlay { position: fixed; inset: 0; background: rgba(16,16,18,0.55); z-index: 4500; opacity: 0; pointer-events: none; transition: opacity .25s; display: flex; align-items: center; justify-content: center; padding: 24px; }
+            .checkout-overlay.show { opacity: 1; pointer-events: all; }
+            .checkout-modal { background: var(--white); width: 560px; max-width: 100%; max-height: 90vh; overflow-y: auto; border-radius: 20px; box-shadow: var(--shadow-lg); position: relative; }
+            .checkout-close { position: absolute; top: 18px; right: 18px; width: 38px; height: 38px; background: var(--gray-50); border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: var(--black); z-index: 2; transition: all .2s; }
+            .checkout-close:hover { background: var(--red); color: white; }
+            .checkout-header { padding: 32px 32px 0; }
+            .checkout-title { font-family: 'Poppins',sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.01em; color: var(--black); margin-bottom: 4px; }
+            .checkout-subtitle { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 20px; }
+            .checkout-summary { background: var(--gray-50); border-radius: var(--radius); padding: 16px 18px; margin: 0 32px 20px; }
+            .checkout-summary-item { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gray-700); padding: 5px 0; }
+            .checkout-summary-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; color: var(--black); padding-top: 10px; margin-top: 6px; border-top: 1px solid var(--gray-200); }
+            .checkout-form { padding: 0 32px 32px; }
+            .checkout-section-label { font-size: 0.78rem; font-weight: 700; color: var(--black); text-transform: uppercase; letter-spacing: .03em; margin: 18px 0 10px; }
+            .checkout-section-label:first-child { margin-top: 0; }
+            .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .checkout-field { margin-bottom: 10px; }
+            .checkout-field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--gray-500); margin-bottom: 5px; }
+            .checkout-field input { width: 100%; padding: 11px 13px; border: 1.5px solid var(--gray-200); border-radius: 9px; font-size: 0.9rem; font-family: inherit; color: var(--black); transition: border-color .2s; }
+            .checkout-field input:focus { outline: none; border-color: var(--black); }
+            .checkout-error { color: var(--red); font-size: 0.82rem; font-weight: 600; margin: 4px 0 10px; display: none; }
+            .checkout-error.show { display: block; }
+            .checkout-submit { width: 100%; background: var(--black); color: white; border: none; padding: 16px; border-radius: 11px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all .2s; margin-top: 8px; }
+            .checkout-submit:hover { background: var(--red); }
+            .checkout-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+            @media (max-width:480px){ .checkout-grid { grid-template-columns: 1fr; } }
         </style>
     </head>
     <body>
@@ -207,7 +234,7 @@
                     <div class="cart-total-label">Total</div>
                     <div class="cart-total-amount" id="cartTotal">R0</div>
                 </div>
-                <button class="checkout-btn" onclick="handleCheckout()">Checkout</button>
+                <button class="checkout-btn" onclick="openCheckout()">Checkout</button>
                 <div class="payfast-note">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                     Secure checkout via PayFast
@@ -242,6 +269,39 @@
                         <button class="pdp-addcart" onclick="pdpAddToCart()">Add to Bag</button>
                     </div>
                 </div>
+            </div>
+        </div>
+                <div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckoutOutside(event)">
+            <div class="checkout-modal">
+                <button class="checkout-close" onclick="closeCheckout()">✕</button>
+                <div class="checkout-header">
+                    <div class="checkout-title">Checkout</div>
+                    <div class="checkout-subtitle">Enter your details so we know where to deliver your order.</div>
+                </div>
+                <div class="checkout-summary" id="checkoutSummary"></div>
+                <form class="checkout-form" id="checkoutForm" onsubmit="submitCheckout(event)">
+                    <div class="checkout-section-label">Contact</div>
+                    <div class="checkout-grid">
+                        <div class="checkout-field"><label>First Name</label><input type="text" id="ckFirstName" required></div>
+                        <div class="checkout-field"><label>Last Name</label><input type="text" id="ckLastName" required></div>
+                    </div>
+                    <div class="checkout-field"><label>Email</label><input type="email" id="ckEmail" required></div>
+                    <div class="checkout-field"><label>Phone</label><input type="tel" id="ckPhone" required></div>
+
+                    <div class="checkout-section-label">Delivery Address</div>
+                    <div class="checkout-field"><label>Address Line 1</label><input type="text" id="ckAddress1" required></div>
+                    <div class="checkout-field"><label>Address Line 2 (optional)</label><input type="text" id="ckAddress2"></div>
+                    <div class="checkout-grid">
+                        <div class="checkout-field"><label>City</label><input type="text" id="ckCity" required></div>
+                        <div class="checkout-field"><label>Province</label><input type="text" id="ckProvince" required></div>
+                    </div>
+                    <div class="checkout-grid">
+                        <div class="checkout-field"><label>Postal Code</label><input type="text" id="ckPostalCode" required></div>
+                        <div class="checkout-field"><label>Country</label><input type="text" id="ckCountry" value="South Africa" required></div>
+                    </div>
+                    <div class="checkout-error" id="checkoutError"></div>
+                    <button type="submit" class="checkout-submit" id="checkoutSubmitBtn">Continue to Payment</button>
+                </form>
             </div>
         </div>
         <div class="toast" id="toast"></div>
@@ -331,30 +391,6 @@ function updateCart(){
   }
 }
 function toggleCart(){document.getElementById('cartSidebar').classList.toggle('open');document.getElementById('cartOverlay').classList.toggle('show');}
-async function handleCheckout(){
-  if(!cart.length){showToast('Your bag is empty');return;}
-  const email=prompt('Enter your email for your order confirmation:');
-  if(!email)return;
-  showToast('Redirecting to PayFast...');
-  try{
-    const items=cart.map(i=>({name:i.name,price:i.price,qty:i.qty,size:i.size,print:i.print}));
-    const resp=await fetch('/api/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items,email})});
-    const data=await resp.json();
-    if(!resp.ok){showToast(data.error||'Checkout failed, please try again');return;}
-    const form=document.createElement('form');
-    form.method='POST';
-    form.action=data.actionUrl;
-    Object.entries(data.fields).forEach(([k,v])=>{
-      const input=document.createElement('input');
-      input.type='hidden';input.name=k;input.value=v;
-      form.appendChild(input);
-    });
-    document.body.appendChild(form);
-    form.submit();
-  }catch(e){
-    showToast('Checkout failed, please try again');
-  }
-}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function toggleSearch(){
   const ov=document.getElementById('searchOverlay');
@@ -445,6 +481,75 @@ function renderPDP(){
   document.getElementById('pdpSizes').innerHTML=(p.sizes||[]).map(s=>`<button class="pdp-size-btn${s===pdpSize?' selected':''}" onclick="pdpSelectSize('${s}')">${s}</button>`).join('');
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePDP();});
+
+function openCheckout(){
+  if(!cart.length){showToast('Your bag is empty');return;}
+  toggleCart();
+  document.getElementById('checkoutSummary').innerHTML = cart.map(i=>
+    `<div class="checkout-summary-item"><span>${i.name} (${i.size}${i.print?', '+i.print:''}) x${i.qty}</span><span>R${i.price*i.qty}</span></div>`
+  ).join('') + `<div class="checkout-summary-total"><span>Total</span><span>R${cart.reduce((s,i)=>s+i.price*i.qty,0)}</span></div>`;
+  document.getElementById('checkoutError').classList.remove('show');
+  document.getElementById('checkoutOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeCheckout(){
+  document.getElementById('checkoutOverlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+function closeCheckoutOutside(e){if(e.target.id==='checkoutOverlay')closeCheckout();}
+
+async function submitCheckout(e){
+  e.preventDefault();
+  const errEl=document.getElementById('checkoutError');
+  errEl.classList.remove('show');
+  const btn=document.getElementById('checkoutSubmitBtn');
+  const shipping={
+    nameFirst:document.getElementById('ckFirstName').value.trim(),
+    nameLast:document.getElementById('ckLastName').value.trim(),
+    email:document.getElementById('ckEmail').value.trim(),
+    phone:document.getElementById('ckPhone').value.trim(),
+    address1:document.getElementById('ckAddress1').value.trim(),
+    address2:document.getElementById('ckAddress2').value.trim(),
+    city:document.getElementById('ckCity').value.trim(),
+    province:document.getElementById('ckProvince').value.trim(),
+    postalCode:document.getElementById('ckPostalCode').value.trim(),
+    country:document.getElementById('ckCountry').value.trim(),
+  };
+  if(!shipping.nameFirst||!shipping.nameLast||!shipping.email||!shipping.phone||!shipping.address1||!shipping.city||!shipping.province||!shipping.postalCode){
+    errEl.textContent='Please fill in all required fields.';
+    errEl.classList.add('show');
+    return;
+  }
+  btn.disabled=true;
+  btn.textContent='Redirecting to PayFast...';
+  try{
+    const items=cart.map(i=>({name:i.name,price:i.price,qty:i.qty,size:i.size,print:i.print}));
+    const resp=await fetch('/api/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items,shipping})});
+    const data=await resp.json();
+    if(!resp.ok){
+      errEl.textContent=data.error||'Checkout failed, please try again.';
+      errEl.classList.add('show');
+      btn.disabled=false;
+      btn.textContent='Continue to Payment';
+      return;
+    }
+    const form=document.createElement('form');
+    form.method='POST';
+    form.action=data.actionUrl;
+    Object.entries(data.fields).forEach(([k,v])=>{
+      const input=document.createElement('input');
+      input.type='hidden';input.name=k;input.value=v;
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }catch(err){
+    errEl.textContent='Checkout failed, please try again.';
+    errEl.classList.add('show');
+    btn.disabled=false;
+    btn.textContent='Continue to Payment';
+  }
+}
 </script>
     </body>
 </html>
