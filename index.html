@@ -440,7 +440,16 @@ function selectSize(e,id,size){
   e.currentTarget.classList.add('selected');
 }
 
-let cart=[];
+function loadCart(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('storm_cart')||'[]');
+    return Array.isArray(saved)?saved:[];
+  }catch(e){return [];}
+}
+function saveCart(){
+  try{localStorage.setItem('storm_cart', JSON.stringify(cart));}catch(e){}
+}
+let cart=loadCart();
 function addToCart(id){
   const p=products.find(x=>x.id===id);
   const size=selectedSizes[id]||p.sizes[0];
@@ -455,6 +464,7 @@ function addToCart(id){
 function removeFromCart(key){cart=cart.filter(x=>x.key!==key);updateCart();}
 function updateQty(key,d){const i=cart.find(x=>x.key===key);if(i){i.qty=Math.max(0,i.qty+d);if(i.qty===0)removeFromCart(key);else updateCart();}}
 function updateCart(){
+  saveCart();
   const count=cart.reduce((s,i)=>s+i.qty,0),total=cart.reduce((s,i)=>s+i.price*i.qty,0);
   document.getElementById('cartCount').textContent=count;
   document.getElementById('cartTotal').textContent='R'+total;
@@ -565,9 +575,11 @@ function openCheckout(){
     if(!cart.length){showToast('Your bag is empty');return;}
     toggleCart();
     checkoutJustOpened=Date.now();
+    const SHIPPING_FEE=150;
+    const cartSubtotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
     document.getElementById('checkoutSummary').innerHTML = cart.map(i=>
       `<div class="checkout-summary-item"><span>${i.name} (${i.size}${i.print?', '+i.print:''}) x${i.qty}</span><span>R${i.price*i.qty}</span></div>`
-    ).join('') + `<div class="checkout-summary-total"><span>Total</span><span>R${cart.reduce((s,i)=>s+i.price*i.qty,0)}</span></div>`;
+    ).join('') + `<div class="checkout-summary-item"><span>Shipping</span><span>R${SHIPPING_FEE}</span></div>` + `<div class="checkout-summary-total"><span>Total</span><span>R${cartSubtotal+SHIPPING_FEE}</span></div>`;
     document.getElementById('checkoutError').classList.remove('show');
     document.getElementById('checkoutOverlay').classList.add('show');
     document.body.style.overflow='hidden';
@@ -633,6 +645,8 @@ async function submitCheckout(e){
     btn.textContent='Continue to Payment';
   }
 }
+
+updateCart();
 </script>
     </body>
 </html>
