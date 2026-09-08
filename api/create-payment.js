@@ -47,6 +47,7 @@ function summarizeCart(items) {
     if (i.print) bits.push(i.print);
     return `${bits.join(', ')} x${i.qty}`;
   });
+  lines.push('Shipping x1');
   const itemDescription = lines.join(' | ').slice(0, 255);
 
   return { itemName, itemDescription };
@@ -76,8 +77,10 @@ export default async function handler(req, res) {
   // the fix is to keep a copy of your product prices on the server and
   // recompute the total here instead of trusting the client - happy to help
   // with that later if you want it.
-  const total = items.reduce((sum, i) => sum + Number(i.price) * Number(i.qty), 0);
-  if (!(total > 0)) {
+  const SHIPPING_FEE = 150;
+  const subtotal = items.reduce((sum, i) => sum + Number(i.price) * Number(i.qty), 0);
+  const total = subtotal + SHIPPING_FEE;
+  if (!(subtotal > 0)) {
     res.status(400).json({ error: 'Invalid cart total' });
     return;
   }
